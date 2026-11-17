@@ -1,0 +1,10 @@
+{
+  "firebase": {
+    "apiKey": "YOUR_WEB_API_KEY",
+    "authDomain": "YOUR_PROJECT.firebaseapp.com",
+    "projectId": "YOUR_PROJECT",
+    "appId": "1:000000000000:web:0000000000000000"
+  },
+  "appCheck": { "provider": "recaptcha-v3", "siteKey": "YOUR_RECAPTCHA_V3_SITE_KEY" },
+  "cloudModel": "gemini-3.5-flash-lite"
+}

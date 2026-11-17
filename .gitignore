@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.env.*
+*.local
+*debug*token*
+service-account*.json
+e2e/__pycache__
