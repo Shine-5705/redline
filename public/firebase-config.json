@@ -1,0 +1,15 @@
+{
+  "firebase": {
+    "apiKey": "AIzaSyCN0O7aZ7gobLg_s6fMNgGV4kcSvFM2D18",
+    "authDomain": "redline-hybridai.firebaseapp.com",
+    "projectId": "redline-hybridai",
+    "storageBucket": "redline-hybridai.firebasestorage.app",
+    "messagingSenderId": "25895682044",
+    "appId": "1:25895682044:web:7d1f113e05f9ba4d84fc79"
+  },
+  "appCheck": {
+    "provider": "recaptcha-enterprise",
+    "siteKey": "6LflUCQuAAAAAI-_dFnYFlVIOHYK62SY-tJYp_U7"
+  },
+  "cloudModel": "gemini-3.5-flash-lite"
+}

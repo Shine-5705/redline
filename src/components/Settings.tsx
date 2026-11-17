@@ -11,7 +11,7 @@ const EXAMPLE = `{
 }`;
 
 export function Settings({ config, onDevice, localOnly, setLocalOnly, refreshDevice }: Props) {
-  const [text, setText] = useState(config ? JSON.stringify(config, null, 2) : '');
+  const [text, setText] = useState(localStorage.getItem('redline.config') ?? '');
   const [msg, setMsg] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
 
