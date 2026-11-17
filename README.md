@@ -6,9 +6,21 @@ Built for **#BuildHybridAI 2026** with the **Firebase AI Logic** Web SDK (hybrid
 
 **Live app:** https://shine-5705.github.io/redline/ · **License:** MIT
 
-![Redline inbox](docs/screenshots/inbox.png)
+![Redline: a real cloud-path draft with provenance](docs/screenshots/rule-applied.png)
 
 ---
+
+## Verified run (17 Nov 2026, live site, cloud path)
+
+The recording box can't run Gemini Nano: its Chrome enterprise policy disables the on-device model. So every call in this run took Firebase AI Logic's cloud path (`gemini-3.5-flash-lite`, protected by App Check with reCAPTCHA Enterprise).
+
+1. **Ticket PP-10482 draft.** `PREFER_ON_DEVICE` routed the call to the cloud. 1,070 chars of placeholders were sent. The re-scan found 0 identifiers in the prompt. Here is an excerpt of the prompt that was sent:
+   `...on 12 Nov from [UPI_1] and the payment failed but the money was debited. It's been 4 days. Please call me on [PHONE_1]...`
+2. **Agent edit.** The agent cut the apology filler and added "Your dispute ID is DSP-2291" (+5/−28 words).
+3. **Learning.** The agent opted in to `ONLY_IN_CLOUD`. The rule learned was "Avoid generic empathetic filler statements about understanding customer frustration and offering help."
+4. **Ticket PP-10485 draft.** It reported "1 rule applied" and "1 echoed identifier masked": the model repeated `[ACCOUNT_1]`, and Redline displays it as `••••7612`.
+
+These are real model outputs. Your run will differ.
 
 ## The problem
 
