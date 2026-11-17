@@ -33,7 +33,7 @@ function Highlighted({ text, matches, showRedacted, names }: { text: string; mat
   return <p className="msg">{out}</p>;
 }
 
-interface DraftState extends GenResult { promptChars: number; charsOff: number; piiRedacted: number; piiInPrompt: number; rulesUsed: number; redactedDraft: string; vault: Map<string, string> }
+interface DraftState extends GenResult { promptChars: number; charsOff: number; piiRedacted: number; piiInPrompt: number; rulesUsed: number; masked: number; redactedDraft: string; vault: Map<string, string> }
 
 export function Inbox({ engine, onDevice, online, localOnly, data }: Props) {
   const [activeId, setActiveId] = useState(SAMPLE_TICKETS[0].id);
@@ -74,8 +74,8 @@ export function Inbox({ engine, onDevice, online, localOnly, data }: Props) {
       if (piiInPrompt > 0) throw new Error('Blocked: an identifier survived redaction. Nothing was sent.');
       const res = await engine.draft(prompt, force);
       const charsOff = res.source === 'in_cloud' ? prompt.length : 0;
-      const shown = rehydrate(res.text, r.vault);
-      setDraft({ ...res, promptChars: prompt.length, charsOff, piiRedacted: r.matches.length + subj.matches.length + 1, piiInPrompt, rulesUsed: activeRules.length, redactedDraft: res.text, vault: r.vault });
+      const { text: shown, masked } = rehydrate(res.text, r.vault, true) as { text: string; masked: number };
+      setDraft({ ...res, promptChars: prompt.length, charsOff, piiRedacted: r.matches.length + subj.matches.length + 1, piiInPrompt, rulesUsed: activeRules.length, redactedDraft: res.text, vault: r.vault, masked });
       setReply(shown);
       for (const rule of activeRules) await data.save('rules', { ...rule, uses: rule.uses + 1 });
       await log({ feature: 'draft', mode: force ? 'ONLY_ON_DEVICE' : engine.cloud === 'ready' ? 'PREFER_ON_DEVICE' : 'ONLY_ON_DEVICE', source: res.source, model: res.model, latencyMs: res.ms, promptChars: prompt.length, charsOffDevice: charsOff, piiRedacted: r.matches.length + subj.matches.length + 1, piiInPrompt });
@@ -89,7 +89,12 @@ export function Inbox({ engine, onDevice, online, localOnly, data }: Props) {
   async function sendAndLearn() {
     if (!draft) return;
     // Re-tokenise the agent's final text with the same vault, so stored corrections hold placeholders only.
-    const finalRedacted = redact(reply, names, new Map(draft.vault)).text;
+    let unmasked = reply;
+    for (const [token, value] of draft.vault) {
+      const mask = `••••${value.replace(/[\s-]/g, '').slice(-4)}`;
+      if (/^\[(AADHAAR|PAN|CARD|ACCOUNT)_/.test(token)) unmasked = unmasked.split(mask).join(token);
+    }
+    const finalRedacted = redact(unmasked, names, new Map(draft.vault)).text;
     const diff = wordDiff(draft.redactedDraft, finalRedacted);
     setSent((s) => ({ ...s, [ticket.id]: true }));
     const correction: Correction = { id: uid(), ticketId: ticket.id, createdAt: Date.now(), draft: draft.redactedDraft, final: finalRedacted, added: diff.added, removed: diff.removed, status: 'held' };
@@ -193,7 +198,8 @@ export function Inbox({ engine, onDevice, online, localOnly, data }: Props) {
               <span>{draft.ms.toLocaleString()} ms</span><span className="sep">·</span>
               <span>{draft.charsOff === 0 ? 'Nothing left this device' : `${draft.charsOff.toLocaleString()} chars sent, placeholders only`}</span><span className="sep">·</span>
               <span>{draft.piiRedacted} redacted · {draft.piiInPrompt} identifiers in prompt</span>
-              {draft.rulesUsed > 0 && <><span className="sep">·</span><span>{draft.rulesUsed} rules applied</span></>}
+              {draft.rulesUsed > 0 && <><span className="sep">·</span><span>{draft.rulesUsed} rule{draft.rulesUsed === 1 ? '' : 's'} applied</span></>}
+              {draft.masked > 0 && <><span className="sep">·</span><span className="warn-txt">{draft.masked} echoed identifier{draft.masked === 1 ? '' : 's'} masked</span></>}
             </div>
           )}
 

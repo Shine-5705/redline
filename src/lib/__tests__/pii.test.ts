@@ -35,6 +35,8 @@ describe('redact / rehydrate round trip on every sample ticket', () => {
       expect(r.matches.length).toBeGreaterThan(0);
       expect(leakCount(r.text, r.vault, [t.customer])).toBe(0);
       expect(rehydrate(r.text, r.vault)).toBe(t.body);
+      const m = rehydrate(r.text, r.vault, true) as { text: string; masked: number };
+      for (const x of r.matches.filter((x) => ['AADHAAR', 'PAN', 'CARD', 'ACCOUNT'].includes(x.kind))) expect(m.text).not.toContain(x.value);
       const prompt = draftPrompt(r.text, t.subject, []);
       expect(leakCount(prompt, r.vault)).toBe(0);
     });

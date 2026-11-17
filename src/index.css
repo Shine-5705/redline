@@ -180,3 +180,4 @@ mark.pii { background: #fff1e6; color: #9a3412; border-bottom: 1.5px dashed #f59
 
 .spinner { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid currentColor; border-right-color: transparent; display: inline-block; animation: spin .7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+.warn-txt { color: var(--warn); font-weight: 500; }

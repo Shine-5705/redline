@@ -116,10 +116,22 @@ export function redact(text: string, names: string[] = [], vault = new Map<strin
   return { text: out, vault, matches };
 }
 
-export function rehydrate(text: string, vault: Map<string, string>): string {
+const MASK_KINDS = ['AADHAAR', 'PAN', 'CARD', 'ACCOUNT'];
+
+/** Put real values back locally. High-risk identifiers the model echoed are shown masked (last 4 only). */
+export function rehydrate(text: string, vault: Map<string, string>, mask = false): { text: string; masked: number } | string {
   let out = text;
-  for (const [token, value] of vault) out = out.split(token).join(value);
-  return out;
+  let masked = 0;
+  for (const [token, value] of vault) {
+    if (!out.includes(token)) continue;
+    const kind = token.slice(1, token.lastIndexOf('_'));
+    if (mask && MASK_KINDS.includes(kind)) {
+      const n = out.split(token).length - 1;
+      masked += n;
+      out = out.split(token).join(`••••${value.replace(/[\s-]/g, '').slice(-4)}`);
+    } else out = out.split(token).join(value);
+  }
+  return mask ? { text: out, masked } : out;
 }
 
 /** Independent re-scan of an outbound prompt. Used by the privacy ledger to prove 0 identifiers left. */
